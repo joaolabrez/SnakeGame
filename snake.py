@@ -2,10 +2,9 @@ import pygame
 import random
 import sys
 
-# Inicialização do Pygame
 pygame.init()
+pygame.mixer.init()
 
-# Definições de Cores e Tela
 PRETO = (0, 0, 0)
 BRANCO = (255, 255, 255)
 VERMELHO = (213, 50, 80)
@@ -13,9 +12,8 @@ VERDE = (0, 255, 0)
 LARGURA_TELA = 600
 ALTURA_TELA = 400
 tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
-pygame.display.set_caption('Jogo da Cobrinha')
+pygame.display.set_caption('SNAKE GAME')
 
-# Configurações do Jogo
 TAMANHO_BLOCO = 20
 VELOCIDADE_JOGO = 15
 relogio = pygame.time.Clock()
@@ -30,6 +28,21 @@ except pygame.error:
     fonte_pontuacao = pygame.font.SysFont("comicsansms", 35)
     fonte_menu = pygame.font.SysFont("bahnschrift", 25)
 
+try:
+    som_comida = pygame.mixer.Sound("crunch.wav")
+    som_gameover = pygame.mixer.Sound("game_over.wav")
+except pygame.error:
+    print("Arquivos de som não encontrados! O jogo rodará sem som.")
+    som_comida = type('DummySound', (), {'play': lambda: None})()
+    som_gameover = type('DummySound', (), {'play': lambda: None})()
+
+try:
+    imagem_maca_original = pygame.image.load("maca.png").convert_alpha()
+    imagem_maca = pygame.transform.scale(imagem_maca_original, (TAMANHO_BLOCO, TAMANHO_BLOCO))
+except pygame.error:
+    print("Imagem 'maca.png' não encontrada! A comida será um quadrado vermelho.")
+    imagem_maca = None
+
 
 def exibir_pontuacao(pontos):
     valor = fonte_pontuacao.render(str(pontos), True, BRANCO)
@@ -42,41 +55,33 @@ def desenhar_cobra(tamanho_bloco, corpo_da_cobra):
         pygame.draw.rect(tela, VERDE, [segmento[0], segmento[1], tamanho_bloco, tamanho_bloco])
 
 
-def exibir_mensagem(msg, cor, y_deslocamento=0, fonte=fonte_menu):  # Adicionamos um parâmetro para escolher a fonte
+def exibir_mensagem(msg, cor, y_deslocamento=0, fonte=fonte_menu):
     texto = fonte.render(msg, True, cor)
     retangulo_texto = texto.get_rect(center=(LARGURA_TELA / 2, ALTURA_TELA / 2 + y_deslocamento))
     tela.blit(texto, retangulo_texto)
 
 
-# TELA DE MENU
 def tela_de_menu():
     menu_ativo = True
     while menu_ativo:
         tela.fill(PRETO)
-
-        # Desenha o título do jogo
-        exibir_mensagem("SNAKE", VERDE, -80, fonte_titulo)
-
-        # Desenha as opções
-        exibir_mensagem("E - Iniciar Jogo", BRANCO, 20)
+        exibir_mensagem("SNAKE GAME", VERDE, -80, fonte_titulo)
+        exibir_mensagem("E - Iniciar", BRANCO, 20)
         exibir_mensagem("Q - Sair", BRANCO, 70)
-
         pygame.display.update()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_e:  # Se apertar 'E'
-                    rodar_jogo()  # Começa o jogo
-                if event.key == pygame.K_q:  # Se apertar 'Q'
+                if event.key == pygame.K_e:
+                    rodar_jogo()
+                if event.key == pygame.K_q:
                     pygame.quit()
                     sys.exit()
 
 
 def rodar_jogo():
-    """Contém o loop principal e a lógica do jogo."""
     game_over = False
     game_close = False
     pos_x = LARGURA_TELA / 2
@@ -93,11 +98,9 @@ def rodar_jogo():
             tela.fill(PRETO)
             exibir_mensagem("GAME OVER", VERMELHO, y_deslocamento=-50)
             exibir_mensagem("E - Jogar de Novo", BRANCO, y_deslocamento=50)
-            exibir_mensagem("Q - Sair", BRANCO,
-                            y_deslocamento=90)
+            exibir_mensagem("Q - Sair", BRANCO, y_deslocamento=90)
             exibir_pontuacao(comprimento_cobra - 1)
             pygame.display.update()
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     game_over = True
@@ -127,12 +130,18 @@ def rodar_jogo():
                     delta_x = 0
 
         if pos_x >= LARGURA_TELA or pos_x < 0 or pos_y >= ALTURA_TELA or pos_y < 0:
+            som_gameover.play()
             game_close = True
 
         pos_x += delta_x
         pos_y += delta_y
         tela.fill(PRETO)
-        pygame.draw.rect(tela, VERMELHO, [comida_x, comida_y, TAMANHO_BLOCO, TAMANHO_BLOCO])
+
+        if imagem_maca:
+            tela.blit(imagem_maca, (comida_x, comida_y))
+        else:
+            pygame.draw.rect(tela, VERMELHO, [comida_x, comida_y, TAMANHO_BLOCO, TAMANHO_BLOCO])
+
         cabeca_cobra = [pos_x, pos_y]
         corpo_cobra.append(cabeca_cobra)
 
@@ -141,6 +150,7 @@ def rodar_jogo():
 
         for segmento in corpo_cobra[:-1]:
             if segmento == cabeca_cobra:
+                som_gameover.play()
                 game_close = True
 
         desenhar_cobra(TAMANHO_BLOCO, corpo_cobra)
@@ -148,15 +158,18 @@ def rodar_jogo():
         pygame.display.update()
 
         if pos_x == comida_x and pos_y == comida_y:
-            comida_x = round(random.randrange(0, LARGURA_TELA - TAMANHO_BLOCO) / float(TAMANHO_BLOCO)) * float(
+            comida_x = round(random.randrange(0, LARGURA_TELA - TAMANHO_BLOCO) / float(
+                TAMANHO_BLOCO)) * float(
                 TAMANHO_BLOCO)
             comida_y = round(random.randrange(0, ALTURA_TELA - TAMANHO_BLOCO) / float(TAMANHO_BLOCO)) * float(
                 TAMANHO_BLOCO)
             comprimento_cobra += 1
+            som_comida.play()
 
         relogio.tick(VELOCIDADE_JOGO)
 
     pygame.quit()
     sys.exit()
+
 
 tela_de_menu()
