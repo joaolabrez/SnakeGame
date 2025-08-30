@@ -230,25 +230,16 @@ def rodar_jogo():
             elif direcao_atual == 'DIREITA':
                 imagem_cabeca_final = imagens_cobra['cabeca_direita']
 
-            # --- LÓGICA DO RABO (TODAS AS DIREÇÕES INVERTIDAS) ---
+            # LÓGICA DO RABO (TODAS AS DIREÇÕES INVERTIDAS)
             if len(corpo_cobra) > 1:
                 rabo = corpo_cobra[0]
-                segundo_segmento = corpo_cobra[1]  # O segmento logo depois do rabo
-
-                # Se o segundo segmento está à direita do rabo, o rabo aponta para a ESQUERDA
-                # Mas como seus arquivos parecem invertidos, pedimos o da DIREITA
+                segundo_segmento = corpo_cobra[1]
                 if segundo_segmento[0] > rabo[0]:
-                    imagem_rabo_final = imagens_cobra['rabo_direita']  # INVERTIDO
-                # Se o segundo segmento está à esquerda do rabo, o rabo aponta para a DIREITA
-                # Mas como seus arquivos parecem invertidos, pedimos o da ESQUERDA
+                    imagem_rabo_final = imagens_cobra['rabo_direita']
                 elif segundo_segmento[0] < rabo[0]:
-                    imagem_rabo_final = imagens_cobra['rabo_esquerda']  # INVERTIDO
-                # Se o segundo segmento está abaixo do rabo, o rabo aponta para CIMA
-                # Mas como seus arquivos parecem invertidos, pedimos o de BAIXO
+                    imagem_rabo_final = imagens_cobra['rabo_esquerda']
                 elif segundo_segmento[1] > rabo[1]:
-                    imagem_rabo_final = imagens_cobra['rabo_baixo']  # INVERTIDO
-                # Se o segundo segmento está acima do rabo, o rabo aponta para BAIXO
-                # Mas como seus arquivos parecem invertidos, pedimos o de CIMA
+                    imagem_rabo_final = imagens_cobra['rabo_baixo']
                 elif segundo_segmento[1] < rabo[1]:
                     imagem_rabo_final = imagens_cobra['rabo_cima']  # INVERTIDO
 
