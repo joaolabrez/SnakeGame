@@ -1,18 +1,23 @@
-# main.py
 import pygame
 import sys
 from const import LARGURA_TELA, ALTURA_TELA
+from assets import carregar_assets
 from menu import tela_de_menu
 
 
 def main():
     pygame.init()
+    pygame.mixer.init()
     tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
-    pygame.display.set_caption('SNAKE GAME')
+    pygame.display.set_caption('SNAKE GAME by Joao')
 
-    # O jogo começa aqui, na tela de menu
+    assets = carregar_assets()
+    if not assets:
+        pygame.quit()
+        sys.exit()
+
     while True:
-        tela_de_menu(tela)
+        tela_de_menu(tela, assets)
 
 
 if __name__ == '__main__':

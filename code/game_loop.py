@@ -2,17 +2,24 @@
 import pygame
 import random
 import sys
+from pathlib import Path
 from const import *
 from drawing import desenhar_cobra, exibir_pontuacao, exibir_fps
 
+CAMINHO_RAIZ = Path(__file__).parent.parent
+CAMINHO_ASSETS = CAMINHO_RAIZ / "assets"
+
 
 def musica_game():
-    pygame.mixer.music.load('./assets/musica_game.wav')
-    pygame.mixer.music.play(-1)
-    pygame.mixer.music.set_volume(0.3)
+    try:
+        pygame.mixer.music.load(CAMINHO_ASSETS / 'musica.wav')
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(0.3)
+    except pygame.error as e:
+        print(f"Erro ao carregar musica.wav: {e}")
 
 
-def rodar_jogo(tela):
+def rodar_jogo(tela, assets):
     pygame.mixer.music.stop()
     musica_game()
     pos_x, pos_y = LARGURA_TELA / 2, ALTURA_TELA / 2
@@ -53,7 +60,7 @@ def rodar_jogo(tela):
 
         if not (0 <= pos_x < LARGURA_TELA and 0 <= pos_y < ALTURA_TELA) or [pos_x, pos_y] in [p for p, d in
                                                                                               corpo_cobra]:
-            som_gameover.play()
+            assets['som_gameover'].play()
             return comprimento_cobra - 1
 
         nova_cabeca = [[pos_x, pos_y], direcao_atual]
@@ -62,14 +69,14 @@ def rodar_jogo(tela):
 
         if pos_x == comida_x and pos_y == comida_y:
             comprimento_cobra += 1
-            som_comida.play()
+            assets['som_comida'].play()
             comida_x = round(random.randrange(0, LARGURA_TELA - TAMANHO_BLOCO) / TAMANHO_BLOCO) * TAMANHO_BLOCO
             comida_y = round(random.randrange(0, ALTURA_TELA - TAMANHO_BLOCO) / TAMANHO_BLOCO) * TAMANHO_BLOCO
 
         tela.fill(PRETO)
-        tela.blit(imagem_maca, (comida_x, comida_y))
-        desenhar_cobra(tela, corpo_cobra)
-        exibir_pontuacao(tela, comprimento_cobra - 1)
-        exibir_fps(tela, relogio.get_fps())
+        tela.blit(assets['imagem_maca'], (comida_x, comida_y))
+        desenhar_cobra(tela, corpo_cobra, assets)
+        exibir_pontuacao(tela, comprimento_cobra - 1, assets)
+        exibir_fps(tela, relogio.get_fps(), assets)
         pygame.display.update()
         relogio.tick(VELOCIDADE_JOGO)

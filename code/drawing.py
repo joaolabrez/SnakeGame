@@ -1,9 +1,11 @@
-# drawing.py
 import pygame
-from config import *
+from const import *
+
+from const import LARGURA_TELA, ALTURA_TELA
 
 
-def desenhar_cobra(tela, corpo_da_cobra):
+def desenhar_cobra(tela, corpo_da_cobra, assets):
+    imagens_cobra = assets['imagens_cobra']
     cabeca_pos, cabeca_dir = corpo_da_cobra[-1]
     if cabeca_dir == 'CIMA':
         tela.blit(imagens_cobra['cabeca_cima'], cabeca_pos)
@@ -35,7 +37,6 @@ def desenhar_cobra(tela, corpo_da_cobra):
             else:
                 tela.blit(imagens_cobra['corpo_horizontal'], pos_atual)
         else:
-            usa_inv = 'curva_direita_cima_inv' in imagens_cobra  # Verifica se as imagens _inv foram carregadas
             if dir_atual == 'CIMA' and dir_prox == 'DIREITA':
                 tela.blit(imagens_cobra['curva_cima_direita'], pos_atual)
             elif dir_atual == 'DIREITA' and dir_prox == 'BAIXO':
@@ -44,26 +45,32 @@ def desenhar_cobra(tela, corpo_da_cobra):
                 tela.blit(imagens_cobra['curva_baixo_esquerda'], pos_atual)
             elif dir_atual == 'ESQUERDA' and dir_prox == 'CIMA':
                 tela.blit(imagens_cobra['curva_esquerda_cima'], pos_atual)
+
+            # Lógica para curvas no sentido anti-horário (imagens invertidas)
             elif dir_atual == 'CIMA' and dir_prox == 'ESQUERDA':
-                tela.blit(imagens_cobra['curva_cima_esquerda_inv' if usa_inv else 'curva_baixo_esquerda'], pos_atual)
+                tela.blit(imagens_cobra['curva_cima_esquerda_inv'], pos_atual)
             elif dir_atual == 'ESQUERDA' and dir_prox == 'BAIXO':
-                tela.blit(imagens_cobra['curva_esquerda_baixo_inv' if usa_inv else 'curva_direita_baixo'], pos_atual)
+                tela.blit(imagens_cobra['curva_esquerda_baixo_inv'], pos_atual)
             elif dir_atual == 'BAIXO' and dir_prox == 'DIREITA':
-                tela.blit(imagens_cobra['curva_baixo_direita_inv' if usa_inv else 'curva_cima_direita'], pos_atual)
+                tela.blit(imagens_cobra['curva_baixo_direita_inv'], pos_atual)
             elif dir_atual == 'DIREITA' and dir_prox == 'CIMA':
-                tela.blit(imagens_cobra['curva_direita_cima_inv' if usa_inv else 'curva_esquerda_cima'], pos_atual)
+                tela.blit(imagens_cobra['curva_direita_cima_inv'], pos_atual)
 
 
-def exibir_pontuacao(tela, pontos):
-    texto = fonte_pontuacao.render(f"Score: {pontos}", True, BRANCO)
+def exibir_pontuacao(tela, pontos, assets):
+    texto = assets['fonte_pontuacao'].render(f"Score: {pontos}", True, BRANCO)
     tela.blit(texto, texto.get_rect(topleft=(10, 10)))
 
 
-def exibir_fps(tela, fps):
-    texto = fonte_fps.render(f"FPS: {int(fps)}", True, BRANCO)
+def exibir_fps(tela, fps, assets):
+    texto = assets['fonte_fps'].render(f"FPS: {int(fps)}", True, BRANCO)
     tela.blit(texto, texto.get_rect(topright=(LARGURA_TELA - 10, 10)))
 
 
-def exibir_mensagem(tela, msg, cor, y_deslocamento=0, fonte=fonte_menu):
+def exibir_mensagem(tela, msg, cor, y_deslocamento, assets, fonte_tipo='menu'):
+    if fonte_tipo == 'titulo':
+        fonte = assets['fonte_titulo']
+    else:
+        fonte = assets['fonte_menu']
     texto = fonte.render(msg, True, cor)
     tela.blit(texto, texto.get_rect(center=(LARGURA_TELA / 2, ALTURA_TELA / 2 + y_deslocamento)))
