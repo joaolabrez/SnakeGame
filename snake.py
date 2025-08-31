@@ -12,53 +12,22 @@ VERDE = (0, 255, 0)
 LARGURA_TELA = 600
 ALTURA_TELA = 400
 tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
-pygame.display.set_caption('SNAKE GAME')
+pygame.display.set_caption('SNAKE GAME by Joao')
 
 TAMANHO_BLOCO = 20
 VELOCIDADE_JOGO = 15
 relogio = pygame.time.Clock()
 
 try:
-    # ALTERAÇÃO: Adicionado 'assets/'
+    # --- Carregamento de assets ---
     fonte_titulo = pygame.font.Font("assets/PressStart2P-Regular.ttf", 40)
-    # ALTERAÇÃO: Adicionado 'assets/'
-    fonte_pontuacao = pygame.font.Font("assets/PressStart2P-Regular.ttf", 28)
-    # ALTERAÇÃO: Adicionado 'assets/'
+    fonte_pontuacao = pygame.font.Font("assets/PressStart2P-Regular.ttf", 14)
     fonte_menu = pygame.font.Font("assets/PressStart2P-Regular.ttf", 20)
-except pygame.error:
-    print("Arquivo da fonte não encontrado! Usando fontes padrão.")
-    fonte_titulo = pygame.font.SysFont("comicsansms", 50)
-    fonte_pontuacao = pygame.font.SysFont("comicsansms", 35)
-    fonte_menu = pygame.font.SysFont("bahnschrift", 25)
-
-try:
-    # ALTERAÇÃO: Adicionado 'assets/'
+    fonte_fps = pygame.font.Font("assets/PressStart2P-Regular.ttf", 14)
     som_comida = pygame.mixer.Sound("assets/crunch.wav")
-    # ALTERAÇÃO: Adicionado 'assets/'
     som_gameover = pygame.mixer.Sound("assets/game_over.wav")
-except pygame.error:
-    print("Arquivos de som não encontrados! O jogo rodará sem som.")
-    som_comida = type('DummySound', (), {'play': lambda: None})()
-    som_gameover = type('DummySound', (), {'play': lambda: None})()
-
-try:
-    # ALTERAÇÃO: Adicionado 'assets/'
-    imagem_maca_original = pygame.image.load("assets/maca.png").convert_alpha()
-    imagem_maca = pygame.transform.scale(imagem_maca_original, (TAMANHO_BLOCO, TAMANHO_BLOCO))
-except pygame.error:
-    print("Imagem 'maca.png' não encontrada! A comida será um quadrado vermelho.")
-    imagem_maca = None
-
-try:
-    # ALTERAÇÃO: Adicionado 'assets/'
-    imagem_background_original = pygame.image.load("assets/background.png").convert()
-    imagem_background = pygame.transform.scale(imagem_background_original, (LARGURA_TELA, ALTURA_TELA))
-except (pygame.error, FileNotFoundError):
-    print("Imagem 'background.png' não encontrada! O fundo será preto.")
-    imagem_background = None
-
-try:
-    # ALTERAÇÃO: Adicionado 'assets/' a cada caminho de imagem da cobra
+    imagem_maca = pygame.transform.scale(pygame.image.load("assets/maca.png").convert_alpha(),
+                                         (TAMANHO_BLOCO, TAMANHO_BLOCO))
     imagens_cobra = {
         'cabeca_cima': pygame.transform.scale(pygame.image.load('assets/cabeca_cima.png').convert_alpha(),
                                               (TAMANHO_BLOCO, TAMANHO_BLOCO)),
@@ -76,190 +45,192 @@ try:
                                                (TAMANHO_BLOCO, TAMANHO_BLOCO)),
         'rabo_esquerda': pygame.transform.scale(pygame.image.load('assets/rabo_esquerda.png').convert_alpha(),
                                                 (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        'corpo_vertical': pygame.transform.scale(pygame.image.load('assets/corpo_vertical.png').convert_alpha(),
+                                                 (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        'corpo_horizontal': pygame.transform.scale(pygame.image.load('assets/corpo_horizontal.png').convert_alpha(),
+                                                   (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        # Curvas Normais (sentido horário)
+        'curva_direita_baixo': pygame.transform.scale(pygame.image.load('assets/curva_sup_right.png').convert_alpha(),
+                                                      (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        'curva_baixo_esquerda': pygame.transform.scale(pygame.image.load('assets/curva_sup_left.png').convert_alpha(),
+                                                       (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        'curva_esquerda_cima': pygame.transform.scale(pygame.image.load('assets/curva_low_left.png').convert_alpha(),
+                                                      (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        'curva_cima_direita': pygame.transform.scale(pygame.image.load('assets/curva_low_right.png').convert_alpha(),
+                                                     (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        # Curvas Invertidas (sentido anti-horário)
+        'curva_direita_cima_inv': pygame.transform.scale(
+            pygame.image.load('assets/curva_low_right_inv.png').convert_alpha(), (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        'curva_cima_esquerda_inv': pygame.transform.scale(
+            pygame.image.load('assets/curva_low_left_inv.png').convert_alpha(), (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        'curva_esquerda_baixo_inv': pygame.transform.scale(
+            pygame.image.load('assets/curva_sup_left_inv.png').convert_alpha(), (TAMANHO_BLOCO, TAMANHO_BLOCO)),
+        'curva_baixo_direita_inv': pygame.transform.scale(
+            pygame.image.load('assets/curva_sup_right_inv.png').convert_alpha(), (TAMANHO_BLOCO, TAMANHO_BLOCO)),
     }
-except (pygame.error, FileNotFoundError):
-    print("Erro ao carregar as imagens da cobra! Verifique os nomes dos arquivos. A cobra será verde.")
-    imagens_cobra = None
+except Exception as e:
+    print(
+        f"Erro ao carregar um asset: {e}. Verifique se você criou as 4 imagens com final '_inv' e as salvou na pasta 'assets'.")
+    pygame.quit()
+    sys.exit()
 
 
 def exibir_pontuacao(pontos):
-    valor = fonte_pontuacao.render(str(pontos), True, BRANCO)
-    retangulo_texto = valor.get_rect(center=(LARGURA_TELA / 2, 30))
-    tela.blit(valor, retangulo_texto)
+    texto = fonte_pontuacao.render(f"Score: {pontos}", True, BRANCO)
+    tela.blit(texto, texto.get_rect(topleft=(10, 10)))
 
 
-def desenhar_cobra(tamanho_bloco, corpo_da_cobra, imagem_cabeca, imagem_rabo):
-    cabeca = corpo_da_cobra[-1]
-    if imagem_cabeca:
-        tela.blit(imagem_cabeca, (cabeca[0], cabeca[1]))
-    else:
-        pygame.draw.rect(tela, VERDE, [cabeca[0], cabeca[1], tamanho_bloco, tamanho_bloco])
+def exibir_fps(fps):
+    texto = fonte_fps.render(f"FPS: {int(fps)}", True, BRANCO)
+    tela.blit(texto, texto.get_rect(topright=(LARGURA_TELA - 10, 10)))
 
+
+def musica_menu():
+    pygame.mixer.music.load('./assets/musica_menu.wav');
+    pygame.mixer.music.play(-1);
+    pygame.mixer.music.set_volume(0.3)
+
+
+def musica_game():
+    pygame.mixer.music.load('./assets/musica_game.wav');
+    pygame.mixer.music.play(-1);
+    pygame.mixer.music.set_volume(0.3)
+
+
+def desenhar_cobra(corpo_da_cobra):
+    # Lógica de cabeça e rabo (correta)
+    cabeca_pos, cabeca_dir = corpo_da_cobra[-1]
+    if cabeca_dir == 'CIMA':
+        tela.blit(imagens_cobra['cabeca_cima'], cabeca_pos)
+    elif cabeca_dir == 'BAIXO':
+        tela.blit(imagens_cobra['cabeca_baixo'], cabeca_pos)
+    elif cabeca_dir == 'ESQUERDA':
+        tela.blit(imagens_cobra['cabeca_esquerda'], cabeca_pos)
+    elif cabeca_dir == 'DIREITA':
+        tela.blit(imagens_cobra['cabeca_direita'], cabeca_pos)
     if len(corpo_da_cobra) > 1:
-        rabo = corpo_da_cobra[0]
-        if imagem_rabo:
-            tela.blit(imagem_rabo, (rabo[0], rabo[1]))
-        else:
-            pygame.draw.rect(tela, VERDE, [rabo[0], rabo[1], tamanho_bloco, tamanho_bloco])
+        rabo_pos, rabo_dir = corpo_da_cobra[0]
+        prox_pos, prox_dir = corpo_da_cobra[1]
+        if prox_pos[1] < rabo_pos[1]:
+            tela.blit(imagens_cobra['rabo_baixo'], rabo_pos)
+        elif prox_pos[1] > rabo_pos[1]:
+            tela.blit(imagens_cobra['rabo_cima'], rabo_pos)
+        elif prox_pos[0] < rabo_pos[0]:
+            tela.blit(imagens_cobra['rabo_direita'], rabo_pos)
+        elif prox_pos[0] > rabo_pos[0]:
+            tela.blit(imagens_cobra['rabo_esquerda'], rabo_pos)
 
-    for segmento in corpo_da_cobra[1:-1]:
-        pygame.draw.rect(tela, VERDE, [segmento[0], segmento[1], tamanho_bloco, tamanho_bloco])
+    # Lógica do Corpo e Curvas (IMPLEMENTANDO SUA IDEIA CORRETAMENTE)
+    for i in range(1, len(corpo_da_cobra) - 1):
+        pos_atual, dir_atual = corpo_da_cobra[i]
+        pos_prox, dir_prox = corpo_da_cobra[i + 1]
+
+        if dir_atual == dir_prox:  # É um segmento reto
+            if dir_atual in ['CIMA', 'BAIXO']:
+                tela.blit(imagens_cobra['corpo_vertical'], pos_atual)
+            else:
+                tela.blit(imagens_cobra['corpo_horizontal'], pos_atual)
+        else:  # É uma curva
+            # Lógica para curvas no sentido horário (imagens normais)
+            if dir_atual == 'CIMA' and dir_prox == 'DIREITA':
+                tela.blit(imagens_cobra['curva_cima_direita'], pos_atual)
+            elif dir_atual == 'DIREITA' and dir_prox == 'BAIXO':
+                tela.blit(imagens_cobra['curva_direita_baixo'], pos_atual)
+            elif dir_atual == 'BAIXO' and dir_prox == 'ESQUERDA':
+                tela.blit(imagens_cobra['curva_baixo_esquerda'], pos_atual)
+            elif dir_atual == 'ESQUERDA' and dir_prox == 'CIMA':
+                tela.blit(imagens_cobra['curva_esquerda_cima'], pos_atual)
+
+            # Lógica para curvas no sentido anti-horário (imagens invertidas)
+            elif dir_atual == 'CIMA' and dir_prox == 'ESQUERDA':
+                tela.blit(imagens_cobra['curva_cima_esquerda_inv'], pos_atual)
+            elif dir_atual == 'ESQUERDA' and dir_prox == 'BAIXO':
+                tela.blit(imagens_cobra['curva_esquerda_baixo_inv'], pos_atual)
+            elif dir_atual == 'BAIXO' and dir_prox == 'DIREITA':
+                tela.blit(imagens_cobra['curva_baixo_direita_inv'], pos_atual)
+            elif dir_atual == 'DIREITA' and dir_prox == 'CIMA':
+                tela.blit(imagens_cobra['curva_direita_cima_inv'], pos_atual)
 
 
 def exibir_mensagem(msg, cor, y_deslocamento=0, fonte=fonte_menu):
     texto = fonte.render(msg, True, cor)
-    retangulo_texto = texto.get_rect(center=(LARGURA_TELA / 2, ALTURA_TELA / 2 + y_deslocamento))
-    tela.blit(texto, retangulo_texto)
+    tela.blit(texto, texto.get_rect(center=(LARGURA_TELA / 2, ALTURA_TELA / 2 + y_deslocamento)))
 
 
 def tela_de_menu():
-    menu_ativo = True
-    while menu_ativo:
-        if imagem_background:
-            tela.blit(imagem_background, (0, 0))
-        else:
-            tela.fill(PRETO)
-
+    musica_menu()
+    while True:
+        tela.fill(PRETO)
         exibir_mensagem("SNAKE GAME", VERDE, -80, fonte_titulo)
         exibir_mensagem("E - Iniciar", BRANCO, 20)
         exibir_mensagem("Q - Sair", BRANCO, 70)
         pygame.display.update()
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
+                pygame.quit();
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_e:
-                    rodar_jogo()
-                if event.key == pygame.K_q:
-                    pygame.quit()
-                    sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+                rodar_jogo()
 
 
 def rodar_jogo():
-    game_over = False
-    game_close = False
-    pos_x = LARGURA_TELA / 2
-    pos_y = ALTURA_TELA / 2
-    delta_x = 0
-    delta_y = 0
-    corpo_cobra = []
-    comprimento_cobra = 1
-    comida_x = round(random.randrange(0, LARGURA_TELA - TAMANHO_BLOCO) / float(TAMANHO_BLOCO)) * float(TAMANHO_BLOCO)
-    comida_y = round(random.randrange(0, ALTURA_TELA - TAMANHO_BLOCO) / float(TAMANHO_BLOCO)) * float(TAMANHO_BLOCO)
-
+    pygame.mixer.music.stop();
+    musica_game()
+    pos_x, pos_y = LARGURA_TELA / 2, ALTURA_TELA / 2
+    delta_x, delta_y = TAMANHO_BLOCO, 0
     direcao_atual = 'DIREITA'
+    corpo_cobra = [[[pos_x, pos_y], direcao_atual]]
+    comprimento_cobra = 1
+    comida_x = round(random.randrange(0, LARGURA_TELA - TAMANHO_BLOCO) / TAMANHO_BLOCO) * TAMANHO_BLOCO
+    comida_y = round(random.randrange(0, ALTURA_TELA - TAMANHO_BLOCO) / TAMANHO_BLOCO) * TAMANHO_BLOCO
 
-    while not game_over:
-        while game_close:
-            if imagem_background:
-                tela.blit(imagem_background, (0, 0))
-            else:
-                tela.fill(PRETO)
-            exibir_mensagem("GAME OVER", VERMELHO, y_deslocamento=-50)
-            exibir_mensagem("E - Jogar de Novo", BRANCO, y_deslocamento=50)
-            exibir_mensagem("Q - Sair", BRANCO, y_deslocamento=90)
-            exibir_pontuacao(comprimento_cobra - 1)
-            pygame.display.update()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    game_over = True
-                    game_close = False
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_q:
-                        game_over = True
-                        game_close = False
-                    if event.key == pygame.K_e:
-                        rodar_jogo()
-
+    while True:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over = True
+            if event.type == pygame.QUIT: pygame.quit(); sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a and delta_x == 0:
-                    delta_x = -TAMANHO_BLOCO;
-                    delta_y = 0;
+                if event.key == pygame.K_a and direcao_atual != 'DIREITA':
                     direcao_atual = 'ESQUERDA'
-                elif event.key == pygame.K_d and delta_x == 0:
-                    delta_x = TAMANHO_BLOCO;
-                    delta_y = 0;
+                elif event.key == pygame.K_d and direcao_atual != 'ESQUERDA':
                     direcao_atual = 'DIREITA'
-                elif event.key == pygame.K_w and delta_y == 0:
-                    delta_y = -TAMANHO_BLOCO;
-                    delta_x = 0;
+                elif event.key == pygame.K_w and direcao_atual != 'BAIXO':
                     direcao_atual = 'CIMA'
-                elif event.key == pygame.K_s and delta_y == 0:
-                    delta_y = TAMANHO_BLOCO;
-                    delta_x = 0;
+                elif event.key == pygame.K_s and direcao_atual != 'CIMA':
                     direcao_atual = 'BAIXO'
 
-        if pos_x >= LARGURA_TELA or pos_x < 0 or pos_y >= ALTURA_TELA or pos_y < 0:
-            som_gameover.play();
-            game_close = True
+        if direcao_atual == 'DIREITA':
+            delta_x, delta_y = TAMANHO_BLOCO, 0
+        elif direcao_atual == 'ESQUERDA':
+            delta_x, delta_y = -TAMANHO_BLOCO, 0
+        elif direcao_atual == 'CIMA':
+            delta_x, delta_y = 0, -TAMANHO_BLOCO
+        elif direcao_atual == 'BAIXO':
+            delta_x, delta_y = 0, TAMANHO_BLOCO
 
-        pos_x += delta_x
+        pos_x += delta_x;
         pos_y += delta_y
 
-        if imagem_background:
-            tela.blit(imagem_background, (0, 0))
-        else:
-            tela.fill(PRETO)
+        if not (0 <= pos_x < LARGURA_TELA and 0 <= pos_y < ALTURA_TELA) or [pos_x, pos_y] in [p for p, d in
+                                                                                              corpo_cobra]:
+            som_gameover.play()
+            return
 
-        if imagem_maca:
-            tela.blit(imagem_maca, (comida_x, comida_y))
-        else:
-            pygame.draw.rect(tela, VERMELHO, [comida_x, comida_y, TAMANHO_BLOCO, TAMANHO_BLOCO])
-
-        cabeca_cobra = [pos_x, pos_y]
-        corpo_cobra.append(cabeca_cobra)
-
+        nova_cabeca = [[pos_x, pos_y], direcao_atual]
+        corpo_cobra.append(nova_cabeca)
         if len(corpo_cobra) > comprimento_cobra: del corpo_cobra[0]
-        for segmento in corpo_cobra[:-1]:
-            if segmento == cabeca_cobra: som_gameover.play(); game_close = True
-
-        imagem_cabeca_final = None
-        imagem_rabo_final = None
-
-        if imagens_cobra:
-            if direcao_atual == 'CIMA':
-                imagem_cabeca_final = imagens_cobra['cabeca_cima']
-            elif direcao_atual == 'BAIXO':
-                imagem_cabeca_final = imagens_cobra['cabeca_baixo']
-            elif direcao_atual == 'ESQUERDA':
-                imagem_cabeca_final = imagens_cobra['cabeca_esquerda']
-            elif direcao_atual == 'DIREITA':
-                imagem_cabeca_final = imagens_cobra['cabeca_direita']
-
-            # LÓGICA DO RABO (TODAS AS DIREÇÕES INVERTIDAS)
-            if len(corpo_cobra) > 1:
-                rabo = corpo_cobra[0]
-                segundo_segmento = corpo_cobra[1]
-                if segundo_segmento[0] > rabo[0]:
-                    imagem_rabo_final = imagens_cobra['rabo_direita']
-                elif segundo_segmento[0] < rabo[0]:
-                    imagem_rabo_final = imagens_cobra['rabo_esquerda']
-                elif segundo_segmento[1] > rabo[1]:
-                    imagem_rabo_final = imagens_cobra['rabo_baixo']
-                elif segundo_segmento[1] < rabo[1]:
-                    imagem_rabo_final = imagens_cobra['rabo_cima']  # INVERTIDO
-
-        desenhar_cobra(TAMANHO_BLOCO, corpo_cobra, imagem_cabeca_final, imagem_rabo_final)
-
-        exibir_pontuacao(comprimento_cobra - 1)
-        pygame.display.update()
 
         if pos_x == comida_x and pos_y == comida_y:
-            comida_x = round(random.randrange(0, LARGURA_TELA - TAMANHO_BLOCO) / float(TAMANHO_BLOCO)) * float(
-                TAMANHO_BLOCO)
-            comida_y = round(random.randrange(0, ALTURA_TELA - TAMANHO_BLOCO) / float(TAMANHO_BLOCO)) * float(
-                TAMANHO_BLOCO)
-            comprimento_cobra += 1
+            comprimento_cobra += 1;
             som_comida.play()
+            comida_x = round(random.randrange(0, LARGURA_TELA - TAMANHO_BLOCO) / TAMANHO_BLOCO) * TAMANHO_BLOCO
+            comida_y = round(random.randrange(0, ALTURA_TELA - TAMANHO_BLOCO) / TAMANHO_BLOCO) * TAMANHO_BLOCO
 
+        tela.fill(PRETO)
+        tela.blit(imagem_maca, (comida_x, comida_y))
+        desenhar_cobra(corpo_cobra)
+        exibir_pontuacao(comprimento_cobra - 1)
+        exibir_fps(relogio.get_fps())
+        pygame.display.update()
         relogio.tick(VELOCIDADE_JOGO)
-
-    pygame.quit()
-    sys.exit()
 
 
 tela_de_menu()
