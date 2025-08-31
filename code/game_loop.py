@@ -1,4 +1,3 @@
-# game_loop.py
 import pygame
 import random
 import sys
@@ -16,7 +15,7 @@ def musica_game():
         pygame.mixer.music.play(-1)
         pygame.mixer.music.set_volume(0.3)
     except pygame.error as e:
-        print(f"Erro ao carregar musica.wav: {e}")
+        print(f"Não foi possível carregar o arquivo de música do jogo: {e}")
 
 
 def rodar_jogo(tela, assets):
@@ -24,7 +23,7 @@ def rodar_jogo(tela, assets):
     musica_game()
     pos_x, pos_y = LARGURA_TELA / 2, ALTURA_TELA / 2
     delta_x, delta_y = TAMANHO_BLOCO, 0
-    direcao_atual = 'DIREITA'
+    direcao_atual = 'CIMA'
     corpo_cobra = [[[pos_x, pos_y], direcao_atual]]
     comprimento_cobra = 1
     comida_x = round(random.randrange(0, LARGURA_TELA - TAMANHO_BLOCO) / TAMANHO_BLOCO) * TAMANHO_BLOCO
@@ -61,7 +60,7 @@ def rodar_jogo(tela, assets):
         if not (0 <= pos_x < LARGURA_TELA and 0 <= pos_y < ALTURA_TELA) or [pos_x, pos_y] in [p for p, d in
                                                                                               corpo_cobra]:
             assets['som_gameover'].play()
-            return comprimento_cobra - 1
+            return {'acao': 'GAME_OVER', 'pontuacao': comprimento_cobra - 1}
 
         nova_cabeca = [[pos_x, pos_y], direcao_atual]
         corpo_cobra.append(nova_cabeca)

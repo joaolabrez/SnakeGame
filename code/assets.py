@@ -1,6 +1,7 @@
-import pygame
-import sys
 from pathlib import Path
+
+import pygame
+
 from const import TAMANHO_BLOCO
 
 

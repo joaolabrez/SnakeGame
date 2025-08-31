@@ -9,26 +9,18 @@ CAMINHO_RAIZ = Path(__file__).parent.parent
 CAMINHO_ASSETS = CAMINHO_RAIZ / "assets"
 
 
-def musica_menu():
+def musica():
     try:
-        pygame.mixer.music.load(CAMINHO_ASSETS / 'musica_menu.wav')
+        pygame.mixer.music.load(CAMINHO_ASSETS / 'musica.wav')
         pygame.mixer.music.play(-1)
         pygame.mixer.music.set_volume(0.3)
     except pygame.error as e:
-        print(f"Erro ao carregar musica_menu.wav: {e}")
-
-
-def musica_ending():
-    try:
-        pygame.mixer.music.load(CAMINHO_ASSETS / 'musica_end.wav')
-        pygame.mixer.music.play(-1)
-        pygame.mixer.music.set_volume(0.3)
-    except pygame.error as e:
-        print(f"Erro ao carregar musica_end.wav: {e}")
+        print(f"Erro ao carregar musica.wav: {e}")
 
 
 def tela_de_menu(tela, assets):
-    musica_menu()
+    pygame.mixer.music.stop()
+    musica()
     while True:
         tela.fill(PRETO)
         exibir_mensagem(tela, "SNAKE GAME", VERDE, -80, assets, fonte_tipo='titulo')
@@ -40,14 +32,16 @@ def tela_de_menu(tela, assets):
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-                pontuacao = rodar_jogo(tela, assets)
-                tela_de_game_over(tela, pontuacao, assets)
+                resultado = rodar_jogo(tela, assets)
+                if resultado['acao'] == 'GAME_OVER':
+                    tela_de_game_over(tela, resultado['pontuacao'], assets)
+                elif resultado['acao'] == 'VOLTAR_MENU':
+                    pygame.mixer.music.stop()
+                    musica()
 
 
 def tela_de_game_over(tela, pontuacao_final, assets):
     pygame.mixer.music.stop()
-    musica_ending()
-    pygame.mixer.music.set_volume(0.3)
     while True:
         tela.fill(PRETO)
         exibir_mensagem(tela, "GAME OVER", VERMELHO, -50, assets, fonte_tipo='titulo')
@@ -60,8 +54,9 @@ def tela_de_game_over(tela, pontuacao_final, assets):
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-                nova_pontuacao = rodar_jogo(tela, assets)
-                pontuacao_final = nova_pontuacao
-                pygame.mixer.music.stop()
-                musica_ending()
-                pygame.mixer.music.set_volume(0.3)
+                resultado = rodar_jogo(tela, assets)
+                if resultado['acao'] == 'GAME_OVER':
+                    pontuacao_final = resultado['pontuacao']
+                    pygame.mixer.music.stop()
+                elif resultado['acao'] == 'VOLTAR_MENU':
+                    return

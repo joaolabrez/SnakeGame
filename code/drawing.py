@@ -1,4 +1,3 @@
-import pygame
 from const import *
 
 from const import LARGURA_TELA, ALTURA_TELA
