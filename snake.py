@@ -84,18 +84,28 @@ def exibir_fps(fps):
     texto = fonte_fps.render(f"FPS: {int(fps)}", True, BRANCO)
     tela.blit(texto, texto.get_rect(topright=(LARGURA_TELA - 10, 10)))
 
+def tela_de_game_over(pontuacao_final):
 
-def musica_menu():
-    pygame.mixer.music.load('./assets/musica_menu.wav');
-    pygame.mixer.music.play(-1);
+    while True:
+        tela.fill(PRETO)
+        exibir_mensagem("GAME OVER", VERMELHO, -50, fonte_titulo)
+        exibir_mensagem(f"Score: {pontuacao_final}", BRANCO, 20, fonte_menu)
+        exibir_mensagem("E - Jogar de Novo", BRANCO, 80, fonte_menu)
+        exibir_mensagem("Q - Sair", BRANCO, 120, fonte_menu)
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+                rodar_jogo() # Reinicia o jogo e sai desta tela
+
+
+def musica():
+    pygame.mixer.music.load('./assets/musica.wav')
+    pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.3)
-
-
-def musica_game():
-    pygame.mixer.music.load('./assets/musica_game.wav');
-    pygame.mixer.music.play(-1);
-    pygame.mixer.music.set_volume(0.3)
-
 
 def desenhar_cobra(corpo_da_cobra):
     # Lógica de cabeça e rabo (correta)
@@ -158,7 +168,7 @@ def exibir_mensagem(msg, cor, y_deslocamento=0, fonte=fonte_menu):
 
 
 def tela_de_menu():
-    musica_menu()
+    musica()
     while True:
         tela.fill(PRETO)
         exibir_mensagem("SNAKE GAME", VERDE, -80, fonte_titulo)
@@ -174,8 +184,8 @@ def tela_de_menu():
 
 
 def rodar_jogo():
-    pygame.mixer.music.stop();
-    musica_game()
+    pygame.mixer.music.stop()
+    musica()
     pos_x, pos_y = LARGURA_TELA / 2, ALTURA_TELA / 2
     delta_x, delta_y = TAMANHO_BLOCO, 0
     direcao_atual = 'DIREITA'
@@ -206,20 +216,21 @@ def rodar_jogo():
         elif direcao_atual == 'BAIXO':
             delta_x, delta_y = 0, TAMANHO_BLOCO
 
-        pos_x += delta_x;
+        pos_x += delta_x
         pos_y += delta_y
 
-        if not (0 <= pos_x < LARGURA_TELA and 0 <= pos_y < ALTURA_TELA) or [pos_x, pos_y] in [p for p, d in
-                                                                                              corpo_cobra]:
+        # --- LÓGICA DE GAME OVER ATUALIZADA ---
+        if not (0 <= pos_x < LARGURA_TELA and 0 <= pos_y < ALTURA_TELA) or [pos_x, pos_y] in [p for p, d in corpo_cobra]:
             som_gameover.play()
-            return
+            tela_de_game_over(comprimento_cobra - 1) # Chama a nova tela de game over
+            return # Sai da função rodar_jogo
 
         nova_cabeca = [[pos_x, pos_y], direcao_atual]
         corpo_cobra.append(nova_cabeca)
         if len(corpo_cobra) > comprimento_cobra: del corpo_cobra[0]
 
         if pos_x == comida_x and pos_y == comida_y:
-            comprimento_cobra += 1;
+            comprimento_cobra += 1
             som_comida.play()
             comida_x = round(random.randrange(0, LARGURA_TELA - TAMANHO_BLOCO) / TAMANHO_BLOCO) * TAMANHO_BLOCO
             comida_y = round(random.randrange(0, ALTURA_TELA - TAMANHO_BLOCO) / TAMANHO_BLOCO) * TAMANHO_BLOCO
