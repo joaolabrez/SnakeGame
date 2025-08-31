@@ -9,8 +9,8 @@ PRETO = (0, 0, 0)
 BRANCO = (255, 255, 255)
 VERMELHO = (213, 50, 80)
 VERDE = (0, 255, 0)
-LARGURA_TELA = 600
-ALTURA_TELA = 400
+LARGURA_TELA = 800
+ALTURA_TELA = 600
 tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
 pygame.display.set_caption('SNAKE GAME by Joao')
 
