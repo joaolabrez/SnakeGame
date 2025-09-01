@@ -1,3 +1,5 @@
+import pygame
+
 from const import *
 
 from const import LARGURA_TELA, ALTURA_TELA
@@ -45,7 +47,6 @@ def desenhar_cobra(tela, corpo_da_cobra, assets):
             elif dir_atual == 'ESQUERDA' and dir_prox == 'CIMA':
                 tela.blit(imagens_cobra['curva_esquerda_cima'], pos_atual)
 
-            # Lógica para curvas no sentido anti-horário (imagens invertidas)
             elif dir_atual == 'CIMA' and dir_prox == 'ESQUERDA':
                 tela.blit(imagens_cobra['curva_cima_esquerda_inv'], pos_atual)
             elif dir_atual == 'ESQUERDA' and dir_prox == 'BAIXO':
@@ -73,3 +74,14 @@ def exibir_mensagem(tela, msg, cor, y_deslocamento, assets, fonte_tipo='menu'):
         fonte = assets['fonte_menu']
     texto = fonte.render(msg, True, cor)
     tela.blit(texto, texto.get_rect(center=(LARGURA_TELA / 2, ALTURA_TELA / 2 + y_deslocamento)))
+
+
+def desenhar_pausa(tela, assets):
+    overlay = pygame.Surface((LARGURA_TELA, ALTURA_TELA), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 180))
+    tela.blit(overlay, (0, 0))
+
+    exibir_mensagem(tela, "JOGO PAUSADO", VERDE, -80, assets, fonte_tipo='titulo')
+    exibir_mensagem(tela, "ESC - Continuar", BRANCO, 20, assets)
+    exibir_mensagem(tela, "M - Voltar ao Menu", BRANCO, 70, assets)
+    exibir_mensagem(tela, "Q - Sair do Jogo", BRANCO, 120, assets)
