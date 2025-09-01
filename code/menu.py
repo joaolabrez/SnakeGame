@@ -14,13 +14,12 @@ def tela_de_scores(tela, assets):
         exibir_mensagem(tela, "PLACAR GERAL", VERMELHO, -120, assets, fonte_tipo='titulo')
         exibir_mensagem(tela, f"Score Total: {score_total}", BRANCO, -40, assets)
         exibir_mensagem(tela, f"Ultima Partida: {ultima_partida}", BRANCO, 20, assets)
-        exibir_mensagem(tela, "M - Voltar ao Menu", BRANCO, 100, assets)
+        exibir_mensagem(tela, "V - Voltar", BRANCO, 100, assets)
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT: pygame.quit(); sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_m or event.key == pygame.K_ESCAPE: return
-
+                if event.key == pygame.K_v or event.key == pygame.K_ESCAPE: return
 
 def tela_de_menu(tela, assets):
     while True:
