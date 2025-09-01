@@ -1,0 +1,14 @@
+.venv/
+venv/
+
+.idea/
+.vscode/
+
+build/
+dist/
+*.spec
+
+__pycache__/
+*.pyc
+
+snake_score.db

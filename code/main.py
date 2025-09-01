@@ -13,12 +13,16 @@ def main():
     setup_database()
 
     tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
-    pygame.display.set_caption('SNAKE GAME by Joao')
+    pygame.display.set_caption('Snake Game')
 
     assets = carregar_assets()
     if not assets:
+        print("Falha ao carregar assets. Encerrando.")
         pygame.quit()
         sys.exit()
+
+    pygame.mixer.music.load(assets['musica_fundo'])
+    pygame.mixer.music.set_volume(0.4)
 
     while True:
         tela_de_menu(tela, assets)
