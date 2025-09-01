@@ -6,8 +6,6 @@ from drawing import desenhar_cobra, exibir_pontuacao, exibir_fps, desenhar_pausa
 
 
 def rodar_jogo(tela, assets):
-    # --- LINHA ADICIONADA AQUI ---
-    # A música começa a tocar toda vez que uma nova partida se inicia
     pygame.mixer.music.play(loops=-1)
 
     pos_x, pos_y = LARGURA_TELA / 2, ALTURA_TELA / 2
@@ -26,10 +24,26 @@ def rodar_jogo(tela, assets):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
             if event.type == pygame.KEYDOWN:
+                # --- LÓGICA DA MÚSICA E PAUSA ALTERADA AQUI ---
                 if event.key == pygame.K_ESCAPE:
                     jogo_pausado = not jogo_pausado
-                if not jogo_pausado:
+                    if jogo_pausado:
+                        pygame.mixer.music.pause()  # Pausa a música
+                    else:
+                        pygame.mixer.music.unpause()  # Retoma a música
+
+                if jogo_pausado:
+                    # 'Q' agora volta para o menu (antes era 'M')
+                    if event.key == pygame.K_q:
+                        pygame.mixer.music.stop()
+                        return {'acao': 'VOLTAR_MENU'}
+                    # 'E' agora retoma o jogo (antes era 'ESC')
+                    if event.key == pygame.K_e:
+                        jogo_pausado = False
+                        pygame.mixer.music.unpause()
+                else:  # Se o jogo NÃO estiver pausado
                     if event.key == pygame.K_a and direcao_atual != 'DIREITA':
                         direcao_atual = 'ESQUERDA'
                     elif event.key == pygame.K_d and direcao_atual != 'ESQUERDA':
@@ -78,14 +92,6 @@ def rodar_jogo(tela, assets):
 
         if jogo_pausado:
             desenhar_pausa(tela, assets)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT: pygame.quit(); sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_q: pygame.quit(); sys.exit()
-                    if event.key == pygame.K_m:
-                        pygame.mixer.music.stop()
-                        return {'acao': 'VOLTAR_MENU'}
-                    if event.key == pygame.K_ESCAPE: jogo_pausado = False
 
         pygame.display.update()
         relogio.tick(VELOCIDADE_JOGO)

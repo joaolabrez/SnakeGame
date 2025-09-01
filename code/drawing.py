@@ -81,7 +81,6 @@ def desenhar_pausa(tela, assets):
     overlay.fill((0, 0, 0, 180))
     tela.blit(overlay, (0, 0))
 
-    exibir_mensagem(tela, "JOGO PAUSADO", VERDE, -80, assets, fonte_tipo='titulo')
-    exibir_mensagem(tela, "ESC - Continuar", BRANCO, 20, assets)
-    exibir_mensagem(tela, "M - Voltar ao Menu", BRANCO, 70, assets)
-    exibir_mensagem(tela, "Q - Sair do Jogo", BRANCO, 120, assets)
+    exibir_mensagem(tela, "JOGO PAUSADO", VERMELHO, -80, assets, fonte_tipo='titulo')
+    exibir_mensagem(tela, "E - Voltar ao jogo", BRANCO, 20, assets)
+    exibir_mensagem(tela, "Q - Voltar ao menu", BRANCO, 120, assets)
